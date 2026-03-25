@@ -2,6 +2,8 @@
 // SignalOS — Core Type Definitions
 // ──────────────────────────────────────────
 
+import { LucideIcon, Package, User, TrendingUp, Newspaper } from 'lucide-react';
+
 export type SignalType = 'bulk_deal' | 'insider_trading' | 'technical_breakout' | 'news_sentiment';
 
 export interface Signal {
@@ -58,6 +60,7 @@ export interface StockInfo {
   signalCount: number;
   signals: Signal[];
   hasConvergence: boolean;
+  aiInsight?: string;
 }
 
 export const SIGNAL_CONFIG: Record<SignalType, {
@@ -65,7 +68,7 @@ export const SIGNAL_CONFIG: Record<SignalType, {
   color: string;
   bgColor: string;
   borderColor: string;
-  icon: string;
+  icon: LucideIcon;
   description: string;
 }> = {
   bulk_deal: {
@@ -73,7 +76,7 @@ export const SIGNAL_CONFIG: Record<SignalType, {
     color: 'text-blue-400',
     bgColor: 'bg-blue-500/10',
     borderColor: 'border-blue-500/30',
-    icon: '📦',
+    icon: Package,
     description: 'NSE Bulk Deal detected',
   },
   insider_trading: {
@@ -81,7 +84,7 @@ export const SIGNAL_CONFIG: Record<SignalType, {
     color: 'text-purple-400',
     bgColor: 'bg-purple-500/10',
     borderColor: 'border-purple-500/30',
-    icon: '👤',
+    icon: User,
     description: 'SEBI/BSE insider trading disclosure',
   },
   technical_breakout: {
@@ -89,7 +92,7 @@ export const SIGNAL_CONFIG: Record<SignalType, {
     color: 'text-emerald-400',
     bgColor: 'bg-emerald-500/10',
     borderColor: 'border-emerald-500/30',
-    icon: '📈',
+    icon: TrendingUp,
     description: '200-day MA + volume spike',
   },
   news_sentiment: {
@@ -97,7 +100,7 @@ export const SIGNAL_CONFIG: Record<SignalType, {
     color: 'text-amber-400',
     bgColor: 'bg-amber-500/10',
     borderColor: 'border-amber-500/30',
-    icon: '📰',
+    icon: Newspaper,
     description: 'AI-classified news sentiment',
   },
 };

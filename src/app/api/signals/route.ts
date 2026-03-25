@@ -1,5 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server';
+export const dynamic = 'force-dynamic';
 import { DEMO_SIGNALS } from '@/lib/demo-data';
+import { liveStore } from '@/lib/live-store';
 // import { collection, getDocs } from 'firebase/firestore';
 // import { db } from '@/lib/firebase';
 
@@ -26,13 +28,8 @@ export async function GET(request: NextRequest) {
 
   // Live Mode: In a real app, query Firestore here
   try {
-    // const signalsCol = collection(db, 'signals');
-    // const signalSnapshot = await getDocs(signalsCol);
-    // const signalList = signalSnapshot.docs.map(doc => doc.data());
-    // return NextResponse.json(signalList);
-    
-    // For this hackathon, live mode returns empty array if no Firebase connected
-    return NextResponse.json([]);
+    const signals = liveStore.getSignals();
+    return NextResponse.json(signals);
   } catch (error) {
     console.error('Error fetching live signals:', error);
     return NextResponse.json({ error: 'Failed to fetch signals' }, { status: 500 });

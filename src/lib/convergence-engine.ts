@@ -22,6 +22,7 @@ export function findConvergences(
   if (filterStale) {
     const staleThreshold = Date.now() - STALE_THRESHOLD_HOURS * 3600000;
     filtered = signals.filter(s => s.lastSuccessTimestamp >= staleThreshold);
+    console.log(`🔍 [SignalOS] Convergence Engine: Filtered ${signals.length - filtered.length} stale signals. ${filtered.length} healthy signals remaining.`);
   }
 
   // Group by stock symbol
@@ -32,6 +33,8 @@ export function findConvergences(
     }
     grouped[signal.stockSymbol].push(signal);
   }
+  
+  console.log(`🔍 [SignalOS] Convergence Engine: Grouped signals for ${Object.keys(grouped).length} unique stocks.`);
 
   const alerts: ConvergenceAlert[] = [];
 
