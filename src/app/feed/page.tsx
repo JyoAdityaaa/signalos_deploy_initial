@@ -71,8 +71,8 @@ export default function FeedPage() {
         
         <div className="space-y-4 pl-[42px]">
           <AnimatePresence>
-            {visibleSignals.filter(Boolean).map((sig) => (
-              <div key={sig.id} className="relative">
+            {visibleSignals.filter(Boolean).map((sig, idx) => (
+              <div key={`${sig.id || 'feed-sig'}-${idx}`} className="relative">
                 <div className="absolute top-1/2 -translate-y-1/2 -left-[42px] w-4 h-px bg-slate-800" />
                 <LiveFeedItem signal={sig} />
               </div>

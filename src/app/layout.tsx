@@ -5,6 +5,7 @@ import { AppProvider } from "@/components/AppContext";
 import { Navbar } from "@/components/Navbar";
 import { DisclaimerBanner } from "@/components/DisclaimerBanner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ModeBackground } from "@/components/ModeBackground";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,13 +22,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${inter.className} min-h-screen bg-slate-950 text-slate-50 selection:bg-indigo-500/30 overflow-x-hidden`}>
-        {/* Background Gradients */}
-        <div className="fixed inset-0 z-0 pointer-events-none">
-          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-900/20 blur-[120px] rounded-full" />
-          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-slate-800/30 blur-[120px] rounded-full" />
-        </div>
-
         <AppProvider>
+          {/* Dynamic Background based on Live/Demo mode */}
+          <ModeBackground />
           <TooltipProvider>
             <div className="relative z-10 flex flex-col min-h-screen">
               <Navbar />

@@ -17,12 +17,11 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  // Demo mode is explicitly true for hackathon
-  const [isDemoMode, setIsDemoMode] = useState(true);
+  // Default to LIVE mode — real data first
+  const [isDemoMode, setIsDemoMode] = useState(false);
   const [signals, setSignals] = useState<Signal[]>([]);
   const [alerts, setAlerts] = useState<ConvergenceAlert[]>([]);
-  // We use DEMO_STOCKS structure and attach signals dynamically
-  const [stocks, setStocks] = useState<StockInfo[]>([...DEMO_STOCKS]);
+  const [stocks, setStocks] = useState<StockInfo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const toggleDemoMode = () => {
@@ -33,36 +32,63 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!silent) setIsLoading(true);
     try {
       const ts = Date.now();
+      
       // 1. Fetch Signals
       const sigRes = await fetch(`/api/signals?demo=${isDemoMode}&t=${ts}`, { cache: 'no-store' });
       const sigData = await sigRes.json();
-      setSignals(sigData);
+      setSignals(Array.isArray(sigData) ? sigData : []);
 
-      // 2. Fetch Alerts (already computed by convergence engine)
+      // 2. Fetch Alerts
       const alertRes = await fetch(`/api/alerts?demo=${isDemoMode}&t=${ts}`, { cache: 'no-store' });
       const alertData = await alertRes.json();
-      setAlerts(alertData);
+      setAlerts(Array.isArray(alertData) ? alertData : []);
 
-      // 3. Fetch Stock Insights (AI summaries for all stocks with signals)
+      // 3. Fetch Insights
       const insightRes = await fetch(`/api/insights?demo=${isDemoMode}&t=${ts}`, { cache: 'no-store' });
       const insightData = await insightRes.json();
 
-      // 4. Update Stocks state with signals, convergence flags, and insights
-      setStocks(prev => {
-        return prev.map(stock => {
+      // 4. Build stocks list based on mode
+      if (isDemoMode) {
+        // Demo Mode: use exact matches
+        const updatedStocks = [...DEMO_STOCKS].map(stock => {
           const stockSignals = sigData.filter((s: Signal) => s.stockSymbol === stock.symbol);
           const hasConvergence = alertData.some((a: ConvergenceAlert) => a.stockSymbol === stock.symbol);
           const aiInsight = insightData[stock.symbol];
+          return {
+            ...stock,
+            signals: stockSignals,
+            signalCount: stockSignals.length,
+            hasConvergence,
+            aiInsight,
+          };
+        });
+        setStocks(updatedStocks);
+      } else {
+        // Live Mode: Use the full realistic stock list, but strip .NS suffix from live data to match
+        const liveStocks = [...DEMO_STOCKS].map(stock => {
+          const stockSignals = sigData.filter((s: Signal) => 
+            s.stockSymbol === stock.symbol || s.stockSymbol.replace('.NS', '') === stock.symbol
+          );
+          
+          const hasConvergence = alertData.some((a: ConvergenceAlert) => 
+            a.stockSymbol === stock.symbol || a.stockSymbol.replace('.NS', '') === stock.symbol
+          );
+          
+          const aiInsight = insightData[stock.symbol] || insightData[`${stock.symbol}.NS`];
           
           return {
             ...stock,
             signals: stockSignals,
             signalCount: stockSignals.length,
             hasConvergence,
-            aiInsight
+            aiInsight,
           };
         });
-      });
+        
+        // Sort the live stocks so that monitored ones (with signals) bubble up to the top
+        const sortedLiveStocks = [...liveStocks].sort((a, b) => b.signalCount - a.signalCount);
+        setStocks(sortedLiveStocks);
+      }
       
     } catch (err) {
       console.error("Failed to fetch data", err);
@@ -73,13 +99,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // Poll for data in live mode
   useEffect(() => {
-    refreshData(false); // Initial load is NOT silent
+    refreshData(false);
     
     if (isDemoMode) return;
     
     const interval = setInterval(() => {
-      refreshData(true); // Polling IS silent
-    }, 15000); // 15s polling for live mode
+      refreshData(true);
+    }, 15000);
     
     return () => clearInterval(interval);
   }, [isDemoMode]);
